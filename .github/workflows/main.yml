@@ -25,7 +25,7 @@ jobs:
         run: python -m flake8 backend/
 
   build_backend_and_push_to_docker_hub:
-    name: Build backend and push image to DockerHub
+    name: Build backend Docker imageand push image to DockerHub
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repo
@@ -48,7 +48,7 @@ jobs:
           tags: ${{ secrets.DOCKER_USERNAME }}/foodgram_backend:latest
 
   build_frontend_and_push_to_docker_hub:
-    name: Push frontend Docker image to DockerHub
+    name: Build frontend Docker image and push image to DockerHub
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repo
