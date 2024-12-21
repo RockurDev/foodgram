@@ -1,0 +1,58 @@
+[project]
+description = """
+Foodgram is an online platform for storing, organizing, and sharing favorite recipes. 
+Developed as part of the Yandex Practicum course, 
+this project was built independently from scratch to provide users with a seamless culinary experience.
+"""
+name = "Foodgram"
+version = "0.1.0"
+readme = "README.md"
+requires-python = "~=3.9"
+dependencies = [
+    "django-debug-toolbar==4.4.6",
+    "django==4.2.16",
+    "django-filter==24.3",
+    "djangorestframework==3.15.2",
+    "python-dotenv==1.0.1",
+    "sqlparse==0.5.2",
+    "typing-extensions==4.12.2",
+    "asgiref==3.8.1",
+    "pillow>=11.0.0",
+    "djangorestframework-stubs==3.15.1",
+    "isort>=5.13.2",
+    "djoser>=2.3.1",
+    "reportlab>=4.2.5",
+    "psycopg>=3.2.3",
+    "psycopg2-binary>=2.9.10",
+    "gunicorn==20.1.0",
+]
+
+[tool.ruff]
+line-length = 79
+target-version = "py39"
+fix = true
+
+[tool.ruff.format]
+quote-style = "single"
+docstring-code-format = true
+
+
+[tool.setuptools.packages.find]
+exclude = ["postman_collection*"]
+
+[tool.isort]
+line_length = 79
+multi_line_output = 3
+use_parentheses = true
+combine_as_imports = true
+skip_gitignore = true
+skip = ["migrations", "tests"]
+include_trailing_comma = true
+
+# Define import groups
+known_django = ["django"]
+known_third_party = ["rest_framework", "reportlab"]
+known_local_folder = ["api", "users", "recipes", "backend"]
+
+sections = ["STDLIB", "DJANGO", "THIRDPARTY", "LOCALFOLDER"]
+default_section = "THIRDPARTY"
