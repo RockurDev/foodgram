@@ -9,7 +9,8 @@ from .constants import (
 
 class DefaultPagintaion(PageNumberPagination):
     """
-    Custom pagination class to set a default page size and allow dynamic page size
+    Custom pagination class to set a default page size
+    and allow dynamic page size
     through a query parameter with a maximum limit.
     """
 

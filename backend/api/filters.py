@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
 
 from django_filters import rest_framework as filters
+from rest_framework.request import Request
 
 from recipes.models import Recipe, Tag
 
@@ -26,15 +27,12 @@ class RecipeFilter(filters.FilterSet):
         model = Recipe
         fields = ('tags__slug',)
 
-    def __init__(self, data=None, queryset=None, *, request=None, prefix=None):
-        super().__init__(data=data, queryset=queryset, prefix=prefix)
-        self.request = request
-
     def filter_by_user_related_field(self, queryset, name, value):
-        if self.request.user.is_anonymous:  # type: ignore
+        self.request: Request
+        if self.request.user.is_anonymous:
             return queryset.none()
         if value:
-            filter_kwargs = {f'{name}__user': self.request.user}  # type: ignore
+            filter_kwargs = {f'{name}__user': self.request.user}
             qs = queryset.filter(**filter_kwargs)
             return qs
         return queryset

@@ -40,7 +40,10 @@ class Base64DecoderMixin:
 
 
 class ImageDecoderMixin(Base64DecoderMixin):
-    """Provides functionality to decode base64-encoded images into ContentFile objects."""
+    """
+    Provides functionality to decode base64-encoded images
+    into ContentFile objects.
+    """
 
     def get_image_file(
         self, encoded_string: str, field_name: str = 'image'
@@ -58,10 +61,10 @@ class RecipesDataMixin:
     def get_recipes_count(self, obj) -> int:
         return obj.subscribed_to.authored_recipes.count()
 
-    def get_recipes(self, obj: Recipe) -> list:
+    def get_recipes(self, obj: Recipe):
         from api.serializers import ShortRecipeSerializer
 
-        request: Optional[Request] = self.context.get('request')  # type: ignore
+        request = self.context.get('request')  # type: ignore
 
         recipes_limit = (
             request.query_params.get('recipes_limit') if request else None
@@ -72,20 +75,17 @@ class RecipesDataMixin:
             except ValueError:
                 recipes_limit = None
 
-        recipes = (
-            obj.subscribed_to.authored_recipes.all()[:recipes_limit]  # type: ignore
-            if recipes_limit
-            else obj.subscribed_to.authored_recipes.all()  # type: ignore
-        )
+        queryset = obj.subscribed_to.authored_recipes.all()  # type: ignore
+        recipes = queryset[:recipes_limit] if recipes_limit else queryset
 
-        return ShortRecipeSerializer(recipes, many=True).data  # type: ignore
+        return ShortRecipeSerializer(recipes, many=True).data
 
 
 class UserDataMixin:
     """Provides utility methods for retrieving user data."""
 
     def get_user_data(self, user) -> dict:
-        request: Optional[Request] = self.context.get('request')  # type: ignore
+        request = self.context.get('request')  # type: ignore
         return {
             'id': user.id,
             'username': user.username,
@@ -99,7 +99,7 @@ class UserDataMixin:
     def is_user_subscribed(self, user) -> bool:
         from users.models import UserSubscriptions
 
-        request: Optional[Request] = self.context.get('request')  # type: ignore
+        request = self.context.get('request')  # type: ignore
         if not request or not request.user.is_authenticated:
             return False
         return UserSubscriptions.objects.filter(
@@ -123,12 +123,13 @@ class ShoppingListGeneratorMixin:
         c.setFont('Georgia', 14)
 
         # Add some title and separator in the PDF
+        username = request.user.username
         c.drawString(
             100,
             750,
-            f'Список ингредиентов для покупок пользователя {request.user.username}',
+            f'Список ингредиентов для покупок пользователя {username}',
         )
-        c.drawString(100, 730, '-------------------------------')
+        c.drawString(100, 730, '-' * 50)
 
         # Get the shopping cart text with ingredients and recipes
         text = self._get_shopping_cart_text(request.user)
@@ -161,7 +162,11 @@ class ShoppingListGeneratorMixin:
         # Format the ingredients and recipes list
         shopping_cart = []
         for recipe in recipes:
-            recipe_info = f'Рецепт: {recipe.recipe.name} | Время приготовления: {recipe.recipe.cooking_time} мин'
+            name = recipe.recipe.name
+            cooking_time = recipe.recipe.cooking_time
+            recipe_info = (
+                f'Рецепт: {name} | Время приготовления: {cooking_time} мин'
+            )
             shopping_cart.append(recipe_info)
 
         shopping_cart.append('\nИнгредиенты: \n')

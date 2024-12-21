@@ -7,7 +7,8 @@ from rest_framework.request import Request
 
 class MeOnlyForAuthenticatedUsers(permissions.BasePermission):
     """
-    Custom permission to allow access to '/me/' endpoint only for authenticated users.
+    Custom permission to allow access to '/me/' endpoint
+    only for authenticated users.
     """
 
     def has_permission(self, request: Request, view: View) -> bool:
@@ -18,7 +19,8 @@ class MeOnlyForAuthenticatedUsers(permissions.BasePermission):
 
 class IsAuthorOrReadOnly(permissions.BasePermission):
     """
-    Custom permission to allow read-only access to an object or full access to the author.
+    Custom permission to allow read-only access
+    to an object or full access to the author.
     """
 
     def has_object_permission(self, request: Request, view: View, obj) -> bool:

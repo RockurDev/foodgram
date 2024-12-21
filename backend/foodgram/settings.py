@@ -18,7 +18,6 @@ ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '127.0.0.1').split(',')
 INTERNAL_IPS = ['127.0.0.1']
 
 
-# fmt: off
 INSTALLED_APPS = [
     # Django apps
     'django.contrib.admin',
@@ -27,19 +26,16 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    
     # Third-party apps
     'djoser',
     'debug_toolbar',
     'rest_framework',
     'rest_framework.authtoken',
-    
     # Local apps
     'api',
     'recipes',
     'users',
 ]
-# fmt: on
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

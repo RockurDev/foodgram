@@ -70,8 +70,9 @@ class UserRegistrationSerializer(UserCreateSerializer):
     """
     Serializer for user registration.
 
-    Extends the Djoser `UserCreateSerializer` to include required fields for
-    registering a new user, such as email, username, first name, last name, and password.
+    Extends the Djoser `UserCreateSerializer`
+    to include required fields for registering a new user,
+    such as email, username, first name, last name, and password.
     """
 
     class Meta(UserCreateSerializer.Meta):
@@ -162,7 +163,9 @@ class RecipeSerializer(
     ImageDecoderMixin,
     serializers.ModelSerializer,
 ):
-    """Serializes recipes, including their tags, ingredients, and other details."""
+    """
+    Serializes recipes, including their tags, ingredients, and other details.
+    """
 
     tags = TagSerializer(many=True, required=True)
     author = UserSerializer(read_only=True)
@@ -286,7 +289,9 @@ class RecipeSerializer(
             if not ingredient_id or amount is None:
                 raise ValidationError(
                     {
-                        'ingredients': 'Each ingredient must have an id and amount.'
+                        'ingredients': (
+                            'Each ingredient must have an id and amount.'
+                        )
                     }
                 )
 
@@ -314,7 +319,9 @@ class RecipeSerializer(
         except Ingredient.DoesNotExist:
             raise serializers.ValidationError(
                 {
-                    'ingredients': f'Ingredient with id {ingredient_id} does not exist.'
+                    'ingredients': (
+                        f'Ingredient with id {ingredient_id} does not exist.'
+                    )
                 }
             )
 

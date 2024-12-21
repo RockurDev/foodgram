@@ -168,7 +168,9 @@ class Ingredient(models.Model):
 
 
 class IngredientRecipe(models.Model):
-    """Model for the many-to-many relationship between recipes and ingredients."""
+    """
+    Model for the many-to-many relationship between recipes and ingredients.
+    """
 
     recipe = models.ForeignKey(
         'Recipe',

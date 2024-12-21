@@ -263,7 +263,8 @@ class FavoriteViewset(viewsets.ModelViewSet):
     def destroy(self, request, *args, **kwargs) -> Response:
         recipe_id = self.kwargs.get('recipe_id')
         recipe = get_object_or_404(Recipe, pk=recipe_id)
-        if not self.request.user.favorites.filter(recipe=recipe).exists():  # type: ignore
+        user = self.request.user
+        if not user.favorites.filter(recipe=recipe).exists():  # type: ignore
             return Response(
                 {'detail': "You don't have this recipe in your favorites."},
                 status=status.HTTP_400_BAD_REQUEST,
