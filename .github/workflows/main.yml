@@ -24,51 +24,51 @@ jobs:
       - name: Run flake8
         run: python -m flake8 backend/
 
-  # build_backend_and_push_to_docker_hub:
-  #   name: Build backend Docker imageand push image to DockerHub
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Check out the repo
-  #       uses: actions/checkout@v3
+  build_backend_and_push_to_docker_hub:
+    name: Build backend Docker imageand push image to DockerHub
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v3
 
-  #     - name: Set up Docker Buildx
-  #       uses: docker/setup-buildx-action@v2
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
 
-  #     - name: Login to Docker 
-  #       uses: docker/login-action@v2
-  #       with:
-  #         username: ${{ secrets.DOCKER_USERNAME }} 
-  #         password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Login to Docker 
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }} 
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
-  #     - name: Push to DockerHub
-  #       uses: docker/build-push-action@v4
-  #       with:
-  #         context: ./backend/
-  #         push: true
-  #         tags: ${{ secrets.DOCKER_USERNAME }}/foodgram_backend:latest
+      - name: Push to DockerHub
+        uses: docker/build-push-action@v4
+        with:
+          context: ./backend/
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/foodgram_backend:latest
 
-  # build_frontend_and_push_to_docker_hub:
-  #   name: Build frontend Docker image and push image to DockerHub
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Check out the repo
-  #       uses: actions/checkout@v3
+  build_frontend_and_push_to_docker_hub:
+    name: Build frontend Docker image and push image to DockerHub
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v3
 
-  #     - name: Set up Docker Buildx
-  #       uses: docker/setup-buildx-action@v2
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
 
-  #     - name: Login to Docker 
-  #       uses: docker/login-action@v2
-  #       with:
-  #         username: ${{ secrets.DOCKER_USERNAME }}
-  #         password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Login to Docker 
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
-  #     - name: Push to DockerHub
-  #       uses: docker/build-push-action@v4
-  #       with:
-  #         context: ./frontend/
-  #         push: true
-  #         tags: ${{ secrets.DOCKER_USERNAME }}/foodgram_frontend:latest
+      - name: Push to DockerHub
+        uses: docker/build-push-action@v4
+        with:
+          context: ./frontend/
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/foodgram_frontend:latest
 
   
   deploy:
