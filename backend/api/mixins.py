@@ -15,8 +15,8 @@ from reportlab.pdfgen import canvas
 from rest_framework import serializers
 from rest_framework.request import Request
 
-from users.models import User
 from recipes.models import Recipe
+from users.models import User
 
 
 class Base64DecoderMixin:
