@@ -88,7 +88,7 @@ jobs:
         username: ${{ secrets.USER }}
         key: ${{ secrets.SSH_KEY }}
         passphrase: ${{ secrets.SSH_PASSPHRASE }}
-        source: "infra/{docker-compose.production.yml,nginx.conf}"
+        source: "infra/docker-compose.production.yml,nginx.conf"
         target: "foodgram/*"
         
  
