@@ -16,8 +16,8 @@ services:
     env_file: .env
     image: rockur/foodgram_backend
     volumes:
-      - static:/staticfiles/
-      - media:/media/
+      - static:/app/staticfiles/
+      - media:/app/media/
     depends_on:
       - db
 
@@ -39,7 +39,7 @@ services:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf
       - ./frontend/build:/usr/share/nginx/html/
       - ./docs/:/usr/share/nginx/html/api/docs/
-      - static:/staticfiles/
+      - static:/app/staticfiles/
       - media:/app/media/
     depends_on:
       - db
