@@ -172,7 +172,7 @@ class RecipeSerializer(
     ingredients = IngredientSerializer(many=True, validators=())
     is_favorited = serializers.SerializerMethodField()
     is_in_shopping_cart = serializers.SerializerMethodField()
-    image = serializers.ImageField(required=True)
+    image = serializers.ImageField(required=True, use_url=True)
     name = serializers.CharField(required=True, min_length=1, max_length=255)
     text = serializers.CharField(required=True, min_length=1)
     cooking_time = serializers.IntegerField(

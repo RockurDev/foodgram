@@ -3,12 +3,8 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
+from .utils import get_avatar_path
 from users.constants import SUBSCRIBERS, SUBSCRIPTIONS
-
-
-def get_avatar_path(instance, filename) -> str:
-    """Return the file path for user avatars."""
-    return f'avatars/{instance.id}/{filename}'
 
 
 class User(AbstractUser):
@@ -21,6 +17,7 @@ class User(AbstractUser):
         blank=True,
         null=True,
     )
+    
     REQUIRED_FIELDS = ['email', 'first_name', 'last_name']
 
     class Meta:
