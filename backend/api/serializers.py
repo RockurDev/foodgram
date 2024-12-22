@@ -210,16 +210,6 @@ class RecipeSerializer(
         """
         Perform all validations in one place.
         """
-        for field in self.Meta.fields:
-            if field not in (
-                'id',
-                'author',
-                'is_favorited',
-                'is_in_shopping_cart',
-            ) and not data.get(field, None):
-                raise serializers.ValidationError(
-                    {'tags': f"Field '{field}' is required."}
-                )
 
         if len(data.get('name')) > MAX_RECIPE_NAME_LENGTH:
             raise serializers.ValidationError(
