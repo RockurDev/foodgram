@@ -195,6 +195,17 @@ class RecipeSerializer(
         )
         read_only_fields = ('author',)
 
+    def to_internal_value(self, data):
+        if 'image' in data and data['image']:
+            data['image'] = self.get_image_file(data.get('image'))
+
+        if not (ingredients := data.get('ingredients')):
+            raise ValidationError(
+                {'ingredients': 'Ingredients must be non empty list'}
+            )
+        data['ingredients'] = self._validate_ingredients(ingredients)
+        return data
+
     def validate(self, data):
         """
         Perform all validations in one place.
@@ -242,15 +253,6 @@ class RecipeSerializer(
             )
 
         return super().validate(data)
-
-    def to_internal_value(self, data):
-        data['image'] = self.get_image_file(data.get('image'))
-        if not (ingredients := data.get('ingredients')):
-            raise ValidationError(
-                {'ingredients': 'Ingredients must be non empty list'}
-            )
-        data['ingredients'] = self._validate_ingredients(ingredients)
-        return data
 
     def get_image(self, obj):
         return obj.image.url
@@ -339,6 +341,9 @@ class RecipeSerializer(
         return instance
 
     def update(self, instance: Recipe, validated_data) -> Recipe:
+        if 'image' in validated_data:
+            instance.image = validated_data.pop('image')
+
         if tags_data := validated_data.pop('tags', []):
             instance.tags.set(tags_data)
 
