@@ -178,7 +178,7 @@ class RecipeSerializer(
     cooking_time = serializers.IntegerField(
         required=True, validators=(MinValueValidator(1),)
     )
-    serializers.ImageField
+
     class Meta:
         model = Recipe
         fields = (

@@ -25,7 +25,7 @@ class RecipeFilter(filters.FilterSet):
 
     class Meta:
         model = Recipe
-        fields = ('tags__slug',)
+        fields = ('tags',)
 
     def filter_by_user_related_field(self, queryset, name, value):
         self.request: Request
