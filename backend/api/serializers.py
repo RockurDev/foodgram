@@ -172,13 +172,13 @@ class RecipeSerializer(
     ingredients = IngredientSerializer(many=True, validators=())
     is_favorited = serializers.SerializerMethodField()
     is_in_shopping_cart = serializers.SerializerMethodField()
-    image = serializers.ImageField(required=True, use_url=True)
+    image = serializers.SerializerMethodField()
     name = serializers.CharField(required=True, min_length=1, max_length=255)
     text = serializers.CharField(required=True, min_length=1)
     cooking_time = serializers.IntegerField(
         required=True, validators=(MinValueValidator(1),)
     )
-
+    serializers.ImageField
     class Meta:
         model = Recipe
         fields = (
@@ -251,6 +251,9 @@ class RecipeSerializer(
             )
         data['ingredients'] = self._validate_ingredients(ingredients)
         return data
+
+    def get_image(self, obj):
+        return obj.image.url
 
     def get_is_favorited(self, obj) -> bool:
         return obj.favorited_by_users.exists()
