@@ -12,7 +12,9 @@ class RecipeFilter(filters.FilterSet):
     """Filter for recipes based on tags, author, and user-related fields."""
 
     tags = filters.ModelMultipleChoiceFilter(
-        field_name='tags__slug', queryset=Tag.objects.all()
+        field_name='tags__slug',
+        queryset=Tag.objects.all(),
+        to_field_name='slug',
     )
     author = filters.ModelChoiceFilter(queryset=User.objects.all())
     is_favorited = filters.BooleanFilter(
