@@ -170,8 +170,6 @@ Foodgram can be deployed using Docker and Docker Compose. Below are the steps to
 5. **Access the Application**:
    Open `http://localhost/` or `http://yourdomain.com/` in your browser.
 
-```
-
 ## Author
 - **Daniil Tropin - RockurDev**  
   [GitHub](https://github.com/RockurDev/foodgram)
@@ -182,4 +180,3 @@ Contributions are welcome! Please open an issue or submit a pull request for any
 ---
 
 **Start cooking and sharing with Foodgram today!**
-```
