@@ -56,7 +56,7 @@ def db_connection(func):
     return wrapper
 
 
-def read_csv(file_path: str):
+def read_csv(file_path: Path):
     """
     Reads a CSV file and returns its content as a tuple of rows.
     """
