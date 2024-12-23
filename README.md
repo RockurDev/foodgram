@@ -1,4 +1,5 @@
 # Foodgram
+>Look at the link: __https://taste-book.ru__
 
 **Foodgram** is an online platform for storing, organizing, and sharing favorite recipes. Developed as part of the Yandex Practicum course, this project was built independently from scratch to provide users with a seamless culinary experience.
 
@@ -8,6 +9,8 @@
 - **Favorites**: Add recipes to your favorites for quick access.
 - **Sharing**: View and share recipes with friends and the community.
 - **User Authentication**: Register and manage your account effortlessly.
+
+
 
 ## Technologies
 Foodgram is built using a modern tech stack to ensure reliability, performance, and ease of use:
@@ -21,6 +24,37 @@ Foodgram is built using a modern tech stack to ensure reliability, performance, 
 - **GitHub Actions** — Automated CI/CD pipelines for testing and deployment.
 - **Docker** — Containerization for consistent development and production environments.
 - **Docker Compose** — Simplified orchestration with `docker-compose.yml` and `docker-compose.production.yml`.
+
+## Data Loader Script
+
+This script loads data from a CSV file into a database (either SQLite or PostgreSQL). It reads ingredient information from a CSV file and inserts it into the `recipes_ingredient` table. The database type can be configured via environment variables.
+
+### File Structure
+
+- `data/ingredients.csv` – CSV file containing ingredient data.
+- `backend/db.sqlite3` – SQLite database file (used if `DB_TYPE=sqlite`).
+  
+### How It Works
+
+1. **Read CSV**: The script reads the data from `data/ingredients.csv` and prepares it for insertion into the database.
+2. **Database Connection**: Depending on the `DB_TYPE`, the script connects to either an SQLite or PostgreSQL database.
+3. **Insert Data**: The ingredient data is inserted into the `recipes_ingredient` table, with the columns `name` and `measurement_unit`.
+
+### Running the Script
+
+Run the script using the following command:
+
+```bash
+python scripts/data_loader.py
+```
+
+If successful, you will see:
+
+```
+Data has been successfully loaded into the database.
+```
+
+If any errors occur (e.g., issues with database connection or CSV formatting), they will be printed to the console.
 
 ## API Endpoints
 Foodgram's API allows for comprehensive interaction with the platform. Below are examples of requests the server can handle.
@@ -137,17 +171,20 @@ Foodgram can be deployed using Docker and Docker Compose. Below are the steps to
    ```
    After running the script, update the `.env` file with your specific configuration:
    ```env
-   # Database configuration
-   DB_HOST=<your-database-hostname> # e.g., 'db' for Docker
-   DB_PORT=<your-database-port> # e.g., 5432
-   POSTGRES_DB=<your-database-name> # e.g., 'foodgram'
-   POSTGRES_USER=<your-database-user> # e.g., 'foodgram_user'
-   POSTGRES_PASSWORD=<your-database-password> # e.g., 'MostSecuredPassword'
+    # Django settings
+    SECRET_KEY=<your-django-secret-key> # Generate using a secure method
+    ALLOWED_HOSTS=<comma-separated-list-of-hosts> # e.g., 'localhost,example.com'
+    DEBUG=<true-or-false> # Optional; Set to 'True' for development; 'False' for production
 
-   # Django settings
-   SECRET_KEY=<your-django-secret-key> # Generate using a secure method
-   ALLOWED_HOSTS=<comma-separated-list-of-hosts> # e.g., 'localhost,example.com'
-   DEBUG=<true-or-false> # Optional; Set to 'True' for development; 'False' for production
+    # Data loader settings
+    DB_TYPE=<your-database-type-postgresql-or-sqlite> # Set to 'sqlite' for development; 'postgres' for for production
+
+    # Database configuration
+    DB_HOST=<your-database-hostname> # e.g., 'db' for Docker
+    DB_PORT=<your-database-port> # e.g., 5432
+    POSTGRES_DB=<your-database-name> # e.g., 'foodgram'
+    POSTGRES_USER=<your-database-user> # e.g., 'foodgram_user'
+    POSTGRES_PASSWORD=<your-database-password> # e.g., 'MostSecuredPassword'
    ```
 
 3. **Build and Run Containers**:
