@@ -1,16 +1,19 @@
+from typing import Literal, Union
+
 from django.contrib.auth.models import AbstractUser
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.db.models import F, Q
+from django.utils.safestring import SafeText, mark_safe
 from django.utils.translation import gettext_lazy as _
 
 from .utils import get_avatar_path
-from users.constants import SUBSCRIBERS, SUBSCRIPTIONS
 
 
 class User(AbstractUser):
     """Custom user model with an additional avatar field."""
 
-    email = models.EmailField(_('email address'), blank=True, unique=True)
+    email = models.EmailField(_('email address'), unique=True)
     avatar = models.ImageField(
         upload_to=get_avatar_path,
         default=None,
@@ -18,16 +21,21 @@ class User(AbstractUser):
         null=True,
     )
 
-    REQUIRED_FIELDS = ['email', 'first_name', 'last_name']
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
 
     class Meta:
-        ordering = ('username',)
+        ordering = ('id',)
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
-        indexes = [
-            models.Index(fields=('username',), name='user_username_idx'),
-            models.Index(fields=('email',), name='user_email_idx'),
-        ]
+
+    @property
+    def avatar_preview(self) -> Union[SafeText, Literal['']]:
+        if self.avatar:
+            return mark_safe(
+                f'<img src={self.avatar.url} width="90" height="90" />'
+            )
+        return ''
 
     def __str__(self) -> str:
         return self.username
@@ -48,13 +56,13 @@ class UserSubscriptions(models.Model):
     subscriber = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name=SUBSCRIPTIONS,
+        related_name='subscriptions',
         verbose_name=_('Подписчик'),
     )
     subscribed_to = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name=SUBSCRIBERS,
+        related_name='subscribers',
         verbose_name=_('Подписки'),
     )
 
@@ -63,34 +71,19 @@ class UserSubscriptions(models.Model):
         verbose_name_plural = _('Подписки')
         constraints = [
             models.UniqueConstraint(
+                name='%(app_label)s_%(class)s_unique_user_subscription',
                 fields=('subscriber', 'subscribed_to'),
-                name='unique_user_subscription',
-            )
+            ),
+            models.CheckConstraint(
+                name='%(app_label)s_%(class)s_prevent_self_subscribe',
+                check=~Q(subscriber=F('subscribed_to')),
+            ),
         ]
 
     def clean(self) -> None:
         """Validate subscription to prevent self-subscription."""
         if self.subscriber == self.subscribed_to:
             raise ValidationError(_('User cannot subscribe to themselves.'))
-
-    @staticmethod
-    def subscribe(subscriber, subscribed_to) -> 'UserSubscriptions':
-        """Create a subscription between two users."""
-        if subscriber == subscribed_to:
-            raise ValueError('User cannot subscribe to themselves.')
-        return UserSubscriptions.objects.create(
-            subscriber=subscriber, subscribed_to=subscribed_to
-        )
-
-    @staticmethod
-    def unsubscribe(subscriber, subscribed_to) -> None:
-        """Remove a subscription between two users."""
-        subscriber.filter(subscribed_to=subscribed_to).delete()
-
-    @staticmethod
-    def is_subscribed(subscriber, subscribed_to) -> bool:
-        """Check if a subscription exists between two users."""
-        return subscriber.filter(subscribed_to=subscribed_to).exists()
 
     def __str__(self) -> str:
         return f'{self.subscriber} -> {self.subscribed_to}'
