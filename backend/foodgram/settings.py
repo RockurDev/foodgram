@@ -2,7 +2,6 @@ import os
 from pathlib import Path
 
 from django.core.management.utils import get_random_secret_key
-
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -68,10 +67,15 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'foodgram.wsgi.application'
 
+
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-DATABASES = {
-    'default': {
+db_type = os.getenv('DB_TYPE', 'sqlite').lower()
+
+DATABASES = {}
+
+if db_type == 'postgres':
+    DATABASES['default'] = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': os.getenv('POSTGRES_DB', 'foodgram'),
         'USER': os.getenv('POSTGRES_USER', 'foodgram_user'),
@@ -79,7 +83,15 @@ DATABASES = {
         'HOST': os.getenv('DB_HOST', 'db'),
         'PORT': os.getenv('DB_PORT', '5432'),
     }
-}
+
+elif db_type == 'sqlite':
+    DATABASES['default'] = {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
+else:
+    raise ValueError(f'Unsupported DB_TYPE: {db_type}')
+
 
 CSRF_TRUSTED_ORIGINS = [
     'https://taste-book.ru',
@@ -113,8 +125,6 @@ REST_FRAMEWORK = {
         'django_filters.rest_framework.DjangoFilterBackend',
         'rest_framework.filters.SearchFilter',
     ),
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 10,
 }
 
 DJOSER = {
