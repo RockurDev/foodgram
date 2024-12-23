@@ -1,18 +1,47 @@
 import csv
+import os
 import sqlite3
+from pathlib import Path
 
-data_csv_path = 'data/ingredients.csv'
-db_path = 'backend/db.sqlite3'
+import psycopg2
+from dotenv import load_dotenv
+
+load_dotenv()
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+data_csv_path = BASE_DIR / 'data' / 'ingredients.csv'
+
+# Paths for SQLite
+sqlite_db_path = BASE_DIR / 'backend' / 'db.sqlite3'
+
+# PostgreSQL connection settings
+pg_host = 'localhost'  # Use locally
+pg_port = os.getenv('DB_PORT', '5432')
+pg_dbname = os.getenv('POSTGRES_DB', 'your_db')
+pg_user = os.getenv('POSTGRES_USER', 'your_user')
+pg_password = os.getenv('POSTGRES_PASSWORD', 'your_password')
+db_type = os.getenv('DB_TYPE', 'sqlite')
 
 
 def db_connection(func):
     """
     Decorator to manage the database connection.
-    Ensures the connection is opened and closed properly.
+    Detects whether to use SQLite or PostgreSQL.
     """
 
     def wrapper(*args, **kwargs):
-        connection = sqlite3.connect(db_path)
+        if db_type.lower() == 'postgresql':
+            connection = psycopg2.connect(
+                host=pg_host,
+                port=pg_port,
+                dbname=pg_dbname,
+                user=pg_user,
+                password=pg_password,
+            )
+        else:  # Default to SQLite
+            connection = sqlite3.connect(sqlite_db_path)
+
         cursor = connection.cursor()
         try:
             result = func(cursor=cursor, *args, **kwargs)
@@ -43,14 +72,21 @@ def read_csv(file_path: str):
 
 
 @db_connection
-def load_data(cursor: sqlite3.Cursor, data: tuple[str]):
+def load_data(cursor, data: tuple):
     """
     Loads data into the `recipes_ingredient` table.
     """
     if not data:
         raise ValueError('No data to insert.')
+
     insert_query = (
-        'INSERT INTO recipes_ingredient (name, measurement_unit) VALUES (?, ?)'
+        (
+            'INSERT INTO recipes_ingredient (name, measurement_unit) VALUES (%s, %s)'
+        )
+        if isinstance(cursor, psycopg2.extensions.cursor)
+        else (
+            'INSERT INTO recipes_ingredient (name, measurement_unit) VALUES (?, ?)'
+        )
     )
     cursor.executemany(insert_query, data)
 
