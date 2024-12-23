@@ -1,5 +1,4 @@
 from django.shortcuts import get_object_or_404, redirect
-
 from rest_framework.request import Request
 
 from api.utils import get_full_recipe_url
