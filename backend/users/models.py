@@ -14,6 +14,8 @@ class User(AbstractUser):
     """Custom user model with an additional avatar field."""
 
     email = models.EmailField(_('email address'), unique=True)
+    first_name = models.CharField(_('first name'), max_length=150)
+    last_name = models.CharField(_('last name'), max_length=150)
     avatar = models.ImageField(
         upload_to=get_avatar_path,
         default=None,
