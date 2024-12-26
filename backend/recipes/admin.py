@@ -1,14 +1,15 @@
 from django.contrib import admin
+from django.db.models import Count
+from django.db.models.query import QuerySet
+from rest_framework.request import Request
 
 from recipes.models import (
     Favorite,
     Ingredient,
     IngredientRecipe,
     Recipe,
-    RecipeShortLinks,
     ShoppingCart,
     Tag,
-    TagRecipe,
 )
 
 
@@ -20,40 +21,66 @@ class TagAdmin(admin.ModelAdmin):
     search_fields = ('name', 'slug')
 
 
-@admin.register(TagRecipe)
-class TagRecipeAdmin(admin.ModelAdmin):
-    """Admin panel for the TagRecipe model."""
+# @admin.register(TagRecipe)
+# class TagRecipeAdmin(admin.ModelAdmin):
+#     """Admin panel for the TagRecipe model."""
 
-    list_display = ('id', 'recipe', 'tag', 'get_tag_slug')
-    search_fields = ('recipe__name', 'tag__name')
-    list_filter = ('tag',)
+#     list_display = ('id', 'recipe', 'tag', 'get_tag_slug')
+#     search_fields = ('recipe__name', 'tag__name')
+#     list_filter = ('tag',)
 
-    @admin.display(description='Тег -> Слаг', ordering='tag__slug')
-    def get_tag_slug(self, obj):
-        return obj.tag.slug
+#     @admin.display(description='Тег -> Слаг', ordering='tag__slug')
+#     def get_tag_slug(self, obj):
+#         return obj.tag.slug
 
 
 @admin.register(Ingredient)
 class IngredientAdmin(admin.ModelAdmin):
     """Admin panel for the Ingredient model."""
 
-    list_display = ('id', 'name', 'measurement_unit')
-    search_fields = ('name',)
+    list_display = (
+        'id',
+        'name',
+        'measurement_unit',
+        'recipes_with_ingredient_count',
+    )
+    search_fields = ('name', 'measurement_unit')
     list_filter = ('measurement_unit',)
+    readonly_fields = ('recipes_with_ingredient_count',)
+
+    @admin.display(description='Число добавлений в рецепт')
+    def recipes_with_ingredient_count(self, obj):
+        return obj.annotated_recipes_count
+
+    def get_queryset(self, request: Request) -> QuerySet:
+        queryset = super().get_queryset(request)
+        return queryset.annotate(
+            annotated_recipes_count=Count('recipes_using_ingredient')
+        )
+
+
+class IngredientsInline(admin.TabularInline):
+    model = Recipe.ingredients.through
 
 
 @admin.register(Recipe)
 class RecipieAdmin(admin.ModelAdmin):
     """Admin model recipie"""
 
-    list_display = ('id', 'name', 'author', 'favorites_count')
-    search_fields = ('name', 'tags', 'author')
+    inlines = (IngredientsInline,)
+
+    list_display = ('id', 'name', 'author', 'favorites_count', 'short_link')
+    search_fields = ('name', 'tags', 'author', 'short_link')
     list_filter = ('tags', 'author', 'publication_date')
-    readonly_fields = ('favorites_count',)
+    readonly_fields = ('favorites_count', 'short_link')
 
     @admin.display(description='Число добавлений в избранное')
     def favorites_count(self, obj):
-        return obj.favorited_by_users.count()
+        return obj.favorites_count
+
+    def get_queryset(self, request: Request) -> QuerySet:
+        queryset = super().get_queryset(request)
+        return queryset.annotate(favorites_count=Count('favorited_by_users'))
 
 
 @admin.register(IngredientRecipe)
@@ -78,11 +105,3 @@ class FavoriteAdmin(admin.ModelAdmin):
 
     list_display = ('id', 'user', 'recipe')
     search_fields = ('user__username', 'recipe__name')
-
-
-@admin.register(RecipeShortLinks)
-class RecipeShortLinksAdmin(admin.ModelAdmin):
-    """Admin panel for RecipeShortLinks model"""
-
-    list_display = ('id', 'recipe', 'short_link')
-    search_fields = ('recipe__name', 'short_link')
