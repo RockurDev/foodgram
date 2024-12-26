@@ -1,27 +1,15 @@
 from rest_framework.request import Request
 
-from recipes.models import RecipeShortLinks
+from recipes.models import Recipe
 
 
-def get_short_recipe_url(
-    request: Request, short_link_instance: RecipeShortLinks
-) -> str:
-    """
-    Generate a short URL for a recipe.
-    """
+def get_short_recipe_url(request: Request, recipe: Recipe) -> str:
+    """Generate a short URL for a recipe."""
 
-    domain = request.get_host()
-    recipe_short_link = short_link_instance.short_link
-    return f'http://{domain}/s/{recipe_short_link}'
+    return request.build_absolute_uri(f'/s/{recipe.short_link}')
 
 
-def get_full_recipe_url(
-    request: Request, short_link_instance: RecipeShortLinks
-) -> str:
-    """
-    Generate the full URL for a recipe.
-    """
+def get_full_recipe_url(request: Request, recipe: Recipe) -> str:
+    """Generate the full URL for a recipe."""
 
-    domain = request.get_host()
-    recipe_id = short_link_instance.recipe.id
-    return f'http://{domain}/recipes/{recipe_id}'
+    return request.build_absolute_uri(f'/recipes/{recipe.id}')  # type: ignore
