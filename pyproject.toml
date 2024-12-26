@@ -5,7 +5,7 @@ Developed as part of the Yandex Practicum course,
 this project was built independently from scratch to provide users with a seamless culinary experience.
 """
 name = "Foodgram"
-version = "0.1.0"
+version = "0.1.1"
 readme = "README.md"
 requires-python = "~=3.9"
 dependencies = [
