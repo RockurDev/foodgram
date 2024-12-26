@@ -217,7 +217,7 @@ class UserRecipeBaseClass(models.Model):
     def __str__(self) -> str:
         return (
             f'User {self.user} has '  # type: ignore
-            f'{self.recipe} in {self.__class__.__name__}'  
+            f'{self.recipe} in {self.__class__.__name__}'  # type: ignore
         )
 
     def __repr__(self) -> str:
