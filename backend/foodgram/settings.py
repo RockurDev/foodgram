@@ -127,17 +127,22 @@ REST_FRAMEWORK = {
     ),
 }
 
+PAGINATION_PAGE_SIZE = 10
+
+PAGINATION_PAGE_SIZE_QUERY_PARAM = 'limit'
+
+PAGINATION_MAX_PAGE_SIZE = 1000
+
+
 DJOSER = {
     'LOGIN_FIELD': 'email',
     'SERIALIZERS': {
-        'user_create': 'api.serializers.UserRegistrationSerializer',
         'user': 'api.serializers.UserSerializer',
         'current_user': 'api.serializers.UserSerializer',
-        'token_create': 'api.serializers.UserAuthTokenSerializer',
     },
     'PERMISSIONS': {
-        'user': ['api.permissions.MeOnlyForAuthenticatedUsers'],
         'user_list': ['rest_framework.permissions.AllowAny'],
+        'user': ['rest_framework.permissions.AllowAny'],
     },
 }
 
