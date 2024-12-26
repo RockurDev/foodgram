@@ -81,11 +81,13 @@ def load_data(cursor, data: tuple):
 
     insert_query = (
         (
-            'INSERT INTO recipes_ingredient (name, measurement_unit) VALUES (%s, %s)'
+            'INSERT INTO recipes_ingredient '
+            '(name, measurement_unit) VALUES (%s, %s)'
         )
         if isinstance(cursor, psycopg2.extensions.cursor)
         else (
-            'INSERT INTO recipes_ingredient (name, measurement_unit) VALUES (?, ?)'
+            'INSERT INTO recipes_ingredient '
+            '(name, measurement_unit) VALUES (?, ?)'
         )
     )
     cursor.executemany(insert_query, data)
