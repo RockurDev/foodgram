@@ -50,9 +50,7 @@ skip = ["migrations", "tests"]
 include_trailing_comma = true
 
 # Define import groups
-known_django = ["django"]
 known_third_party = ["rest_framework", "reportlab"]
 known_local_folder = ["api", "users", "recipes", "backend"]
-
-sections = ["STDLIB", "DJANGO", "THIRDPARTY", "LOCALFOLDER"]
+sections = ["STDLIB", "THIRDPARTY", "LOCALFOLDER"]
 default_section = "THIRDPARTY"
