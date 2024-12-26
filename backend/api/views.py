@@ -52,7 +52,7 @@ class UserViewset(DjoserUserViewSet):
         methods=('PUT',),
         url_path='me/avatar',
     )
-    def update_avatar(self, request: Request) -> Response:
+    def avatar(self, request: Request) -> Response:
         serializer = UserAvatarSerializer(
             instance=request.user, data=request.data
         )
@@ -60,7 +60,7 @@ class UserViewset(DjoserUserViewSet):
         serializer.save()
         return Response(serializer.data)
 
-    @update_avatar.mapping.delete
+    @avatar.mapping.delete
     def delete_avatar(self, request: Request) -> Response:
         self._clear_avatar_field(request.user.id)
         request.user.avatar = None  # type: ignore

@@ -63,7 +63,7 @@ class UserSerializer(serializers.ModelSerializer):
     def get_avatar(self, user):
         request = self.context.get('request')
         if request and user.avatar:
-            return request.build_absolute_uri(user.avatar.url)
+            return user.avatar.url
         return None
 
 
