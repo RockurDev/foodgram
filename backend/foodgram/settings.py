@@ -93,10 +93,7 @@ else:
     raise ValueError(f'Unsupported DB_TYPE: {db_type}')
 
 
-CSRF_TRUSTED_ORIGINS = [
-    'https://taste-book.ru',
-    'https://www.taste-book.ru',
-]
+CSRF_TRUSTED_ORIGINS = os.getenv('CSRF_TRUSTED_ORIGINS', '').split(',') or []
 
 AUTH_USER_MODEL = 'users.User'
 
