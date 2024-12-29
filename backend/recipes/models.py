@@ -8,6 +8,7 @@ from .constants import (
     MAX_AMOUNT,
     MAX_COOKING_TIME,
     MAX_DISPLAY_NAME_LENGTH,
+    MAX_GENERATION_ATTEMPTS,
     MAX_LINK_LENGTH,
     MAX_MEASUREMENT_UNIT_NAME_LENGTH,
     MAX_NAME_INGREDIENT_LENGTH,
@@ -148,7 +149,7 @@ class Recipe(models.Model):
         related_name='recipes_with_ingredient',
     )
     name = models.CharField(
-        max_length=MAX_RECIPE_NAME_LENGTH, verbose_name='Название', blank=False
+        max_length=MAX_RECIPE_NAME_LENGTH, verbose_name='Название'
     )
     image = models.ImageField(
         upload_to=get_recipe_media_path,
@@ -180,10 +181,11 @@ class Recipe(models.Model):
 
     def generate_short_link(self) -> str:
         """Generate a unique short link using a UUID."""
-        while True:
+        for _ in range(MAX_GENERATION_ATTEMPTS):
             short_link = str(uuid.uuid4())[:MAX_LINK_LENGTH]
             if not Recipe.objects.filter(short_link=short_link).exists():
                 return short_link
+        raise ValueError('Could not generate a unique short link.')
 
     def save(self, *args, **kwargs) -> None:
         if not self.short_link:
@@ -235,18 +237,17 @@ class ShoppingCart(UserRecipeBaseClass):
         User,
         on_delete=models.CASCADE,
         verbose_name='Пользователь',
-        related_name='shopping_cart',
     )
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
         verbose_name='Рецепт',
-        related_name='shopping_carts_with_recipe',
     )
 
     class Meta(UserRecipeBaseClass.Meta):
         verbose_name = 'Корзина'
         verbose_name_plural = 'Корзины'
+        default_related_name = 'shopping_cart'
 
 
 class Favorite(UserRecipeBaseClass):
@@ -256,15 +257,14 @@ class Favorite(UserRecipeBaseClass):
         User,
         on_delete=models.CASCADE,
         verbose_name='Пользователь',
-        related_name='favorites',
     )
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
         verbose_name='Рецепт',
-        related_name='favorited_by_users',
     )
 
     class Meta(UserRecipeBaseClass.Meta):
         verbose_name = 'Избранное'
         verbose_name_plural = 'Избранное'
+        defatult_related_name = 'favorites'
