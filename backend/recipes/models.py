@@ -287,4 +287,4 @@ class Favorite(UserRecipeBaseClass):
     class Meta(UserRecipeBaseClass.Meta):
         verbose_name = 'Избранное'
         verbose_name_plural = 'Избранное'
-        defatult_related_name = 'favorites'
+        default_related_name = 'favorites'
