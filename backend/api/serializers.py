@@ -189,7 +189,7 @@ class RecipeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Recipe
-        exclude = ('short_link', 'author')
+        exclude = ('short_link',)
 
     def validate(self, data):
         self._validate_tags(data.get('tags'))
@@ -223,7 +223,7 @@ class RecipeSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError(
                     {'ingredients': 'Ingredients must be unique.'}
                 )
-            validated_ingredients_ids += ingredient_id
+            validated_ingredients_ids.add(ingredient_id)
 
     @atomic
     def create(self, validated_data) -> Recipe:
