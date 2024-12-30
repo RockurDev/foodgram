@@ -53,9 +53,7 @@ class ShoppingListGeneratorMixin:
         # Query ingredients and their total amounts
         # for the user's shopping cart
         ingredient_amount_queryset = (
-            IngredientRecipe.objects.filter(
-                recipes__shopping_carts_with_recipe__user=user
-            )
+            IngredientRecipe.objects.filter(recipe__shopping_cart__user=user)
             .values('ingredient__name')
             .annotate(total_amount=Sum(F('amount')))
             .order_by('ingredient__name')
