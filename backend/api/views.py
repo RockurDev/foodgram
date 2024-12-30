@@ -2,7 +2,7 @@ from pathlib import Path
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.db.models import Count, Exists, OuterRef
+from django.db.models import Count
 from django.db.models.query import QuerySet
 from django.http import FileResponse
 from django.shortcuts import get_object_or_404
@@ -16,7 +16,6 @@ from rest_framework.permissions import (
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from .decorators import paginate
 from .filters import RecipeFilter
 from .mixins import ShoppingListGeneratorMixin
 from .pagination import DefaultPagination
@@ -63,8 +62,7 @@ class UserViewset(DjoserUserViewSet):
     @avatar.mapping.delete
     def delete_avatar(self, request: Request) -> Response:
         self._clear_avatar_field(request.user.id)
-        request.user.avatar = None  # type: ignore
-        request.user.save()
+        request.user.avatar.delete()  # type: ignore
         return Response(
             {'detail': 'Avatar was deleted'},
             status=status.HTTP_204_NO_CONTENT,
@@ -84,15 +82,9 @@ class UserViewset(DjoserUserViewSet):
         url_path='subscribe',
         permission_classes=(IsAuthenticated,),
     )
-    def subscriptions(self, request: Request, id) -> Response:
+    def subscriptions(self, request: Request, id: int) -> Response:
         """Subscribe the authenticated user to another user."""
         subscribed_to_user = get_object_or_404(User, pk=id)
-
-        if request.user == subscribed_to_user:
-            return Response(
-                {'detail': "You can't subscribe to yourself"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
 
         recipes_count = (
             subscribed_to_user.authored_recipes.count()  # type: ignore
@@ -108,7 +100,6 @@ class UserViewset(DjoserUserViewSet):
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-    @paginate
     @action(
         detail=False,
         url_path='subscriptions',
@@ -117,26 +108,12 @@ class UserViewset(DjoserUserViewSet):
     )
     def get_subscriptions(self, request: Request):
         user = self.request.user
-        subscriptions = user.subscriptions.annotate(  # type: ignore
+        queryset = user.subscriptions.annotate(  # type: ignore
             recipes_count=Count('subscribed_to__authored_recipes')
         ).order_by('id')
-
-        recipes_limit = request.query_params.get('recipes_limit')
-        if recipes_limit:
-            try:
-                recipes_limit = int(recipes_limit)
-            except ValueError:
-                return Response(
-                    {
-                        'detail': (
-                            'Parameter recipes_limit must be a valid integer.'
-                        )
-                    },
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-            subscriptions = subscriptions[:recipes_limit]
-
-        return subscriptions
+        page = self.paginate_queryset(queryset)
+        serializer = self.get_serializer(page, many=True)
+        return self.get_paginated_response(serializer.data)
 
     @subscriptions.mapping.delete
     def delete_subscription(self, request: Request, id: int) -> Response:
@@ -185,20 +162,8 @@ class RecipeViewset(ShoppingListGeneratorMixin, viewsets.ModelViewSet):
     http_method_names = ['get', 'post', 'patch', 'delete']
 
     def get_queryset(self) -> QuerySet:
-        user = self.request.user
-        if not user.is_anonymous:
-            favorites_queryset = user.favorites.filter(  # type: ignore
-                recipe=OuterRef('pk')
-            )
-            shopping_cart_queryset = user.shopping_cart.filter(  # type: ignore
-                recipe=OuterRef('pk')
-            )
-        else:
-            favorites_queryset = shopping_cart_queryset = User.objects.none()
-
-        return Recipe.objects.annotate(
-            is_favorited=Exists(favorites_queryset),
-            is_in_shopping_cart=Exists(shopping_cart_queryset),
+        return Recipe.objects.get_recipes_with_user_annotations(  # type: ignore # noqa: E501
+            self.request.user
         )
 
     @action(detail=True, url_path='get-link')
@@ -244,31 +209,10 @@ class RecipeViewset(ShoppingListGeneratorMixin, viewsets.ModelViewSet):
         serializer = self.get_serializer(recipe)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-    @shopping_cart.mapping.get
-    def get_shopping_cart(self, request: Request):
-        return self.request.user.shopping_cart.all()  # type: ignore
-
     @shopping_cart.mapping.delete
     def delete_from_shopping_cart(self, request: Request, pk: int) -> Response:
-        recipe = get_object_or_404(Recipe, pk=pk)
-
-        deleted_rows, _ = self.request.user.shopping_cart.filter(  # type: ignore # noqa: E501
-            recipe=recipe
-        ).delete()
-
-        if not deleted_rows:
-            return Response(
-                {
-                    'detail': (
-                        "You don't have this recipe in your shopping cart."
-                    )
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        return Response(
-            {'detail': 'Recipe was deleted from shopping cart'},
-            status=status.HTTP_204_NO_CONTENT,
+        return self._delete_item(
+            request=request, pk=pk, related_name='shopping_cart'
         )
 
     @action(
@@ -293,17 +237,19 @@ class RecipeViewset(ShoppingListGeneratorMixin, viewsets.ModelViewSet):
         serializer = self.get_serializer(recipe)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-    @favorites.mapping.get
-    def get_favorites(self, request: Request):
-        return self.request.user.favorites.all()  # type: ignore
-
     @favorites.mapping.delete
     def delete_favorite(self, request: Request, pk: int) -> Response:
-        recipe = get_object_or_404(Recipe, pk=pk)
+        return self._delete_item(
+            request=request, pk=pk, related_name='favorites'
+        )
 
-        deleted_rows, _ = self.request.user.favorites.filter(  # type: ignore
-            recipe=recipe
-        ).delete()
+    def _delete_item(
+        self, request: Request, pk: int, related_name: str
+    ) -> Response:
+        recipe = get_object_or_404(Recipe, pk=pk)
+        related_model = getattr(request.user, related_name)
+
+        deleted_rows, _ = related_model.filter(recipe=recipe).delete()
 
         if not deleted_rows:
             return Response(
