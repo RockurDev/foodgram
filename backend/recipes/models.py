@@ -128,6 +128,24 @@ class IngredientRecipe(models.Model):
         )
 
 
+class RecipeQuerySet(models.QuerySet):
+    def get_recipes_with_user_annotations(self, user):
+        if user.is_authenticated:
+            favorites_queryset = user.favorites.filter(  # type: ignore
+                recipe=models.OuterRef('pk')
+            )
+            shopping_cart_queryset = user.shopping_cart.filter(  # type: ignore
+                recipe=models.OuterRef('pk')
+            )
+        else:
+            favorites_queryset = shopping_cart_queryset = User.objects.none()
+
+        return Recipe.objects.annotate(
+            is_favorited=models.Exists(favorites_queryset),
+            is_in_shopping_cart=models.Exists(shopping_cart_queryset),
+        )
+
+
 class Recipe(models.Model):
     """Model representing a recipe."""
 
@@ -173,6 +191,8 @@ class Recipe(models.Model):
         unique=True,
         verbose_name='Короткая ссылка',
     )
+
+    objects = RecipeQuerySet.as_manager()
 
     class Meta:
         ordering = ('-publication_date',)
