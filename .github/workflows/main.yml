@@ -81,6 +81,11 @@ jobs:
     - name: Checkout repo
       uses: actions/checkout@v3
       
+    - name: List files to confirm paths
+      run: |
+        ls -la
+        ls -la infra
+
     - name: Copy docker-compose.production.yml and nginx.conf via scp
       uses: appleboy/scp-action@master
       with:
