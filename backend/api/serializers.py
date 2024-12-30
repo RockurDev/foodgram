@@ -54,17 +54,16 @@ class UserSerializer(serializers.ModelSerializer):
 
     def get_is_subscribed(self, user) -> bool:
         request = self.context.get('request')
-        if not request or not request.user.is_authenticated:
-            return False
-        return UserSubscriptions.objects.filter(
-            subscriber=request.user, subscribed_to=user
-        ).exists()
+        return bool(
+            request
+            and request.user.is_authenticated
+            and UserSubscriptions.objects.filter(
+                subscriber=request.user, subscribed_to=user
+            ).exists()
+        )
 
     def get_avatar(self, user):
-        request = self.context.get('request')
-        if request and user.avatar:
-            return user.avatar.url
-        return None
+        return user.avatar.url if user.avatar else None
 
 
 class UserSubscriptionsSerializer(UserSerializer):
@@ -75,9 +74,6 @@ class UserSubscriptionsSerializer(UserSerializer):
 
     class Meta(UserSerializer.Meta):
         fields = UserSerializer.Meta.fields + ('recipes_count', 'recipes')
-
-    # def get_recipes_count(self, user) -> int:
-    #     return user.authored_recipes.count()
 
     def get_recipes(self, user: Recipe):
         request = self.context.get('request')
@@ -111,6 +107,13 @@ class UserSubscribeSerializer(serializers.ModelSerializer):
                 message=_('You have already subscribed this user.'),
             ),
         )
+
+    def validate(self, attrs):
+        if attrs['subscriber'] == attrs['subscribed_to']:
+            raise serializers.ValidationError(
+                {'detail': "You can't subscribe to yourself."}
+            )
+        return super().validate(attrs)
 
     def to_representation(self, instance):
         return UserSubscriptionsSerializer(instance, context=self.context).data
@@ -186,18 +189,17 @@ class RecipeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Recipe
-        exclude = ('short_link',)
-        read_only_fields = ('author',)
+        exclude = ('short_link', 'author')
 
     def validate(self, data):
-        self._validate_image(data.get('image'))
         self._validate_tags(data.get('tags'))
         self._validate_ingredients(data.get('ingredients'))
         return super().validate(data)
 
-    def _validate_image(self, image):
+    def validate_image(self, image):
         if not image:
             raise serializers.ValidationError('Image is required')
+        return image
 
     def _validate_tags(self, tags):
         if not tags:
@@ -213,19 +215,15 @@ class RecipeSerializer(serializers.ModelSerializer):
                 {'ingredients': 'Ingredients must be a non-empty list.'}
             )
 
-        validated_ingredients_ids = []
+        validated_ingredients_ids = set()
         for ingredient_data in ingredients_data:
             ingredient_id = ingredient_data.get('id')
-            if ingredient_id is None:
-                raise serializers.ValidationError(
-                    {'ingredients': 'Each ingredient must have an ID.'}
-                )
 
             if ingredient_id in validated_ingredients_ids:
                 raise serializers.ValidationError(
                     {'ingredients': 'Ingredients must be unique.'}
                 )
-            validated_ingredients_ids.append(ingredient_id)
+            validated_ingredients_ids += ingredient_id
 
     @atomic
     def create(self, validated_data) -> Recipe:
@@ -235,20 +233,22 @@ class RecipeSerializer(serializers.ModelSerializer):
 
         instance = Recipe.objects.create(author=author, **validated_data)
         instance.tags.set(tags_data)
-        self._create_ingredients(instance, ingredients_data)
+        RecipeSerializer._create_ingredients(instance, ingredients_data)
         return instance
 
+    @atomic
     def update(self, instance: Recipe, validated_data) -> Recipe:
         tags_data = validated_data.pop('tags')
         instance.tags.set(tags_data)
 
         ingredients_data = validated_data.pop('ingredients', [])
         instance.ingredients.clear()
-        self._create_ingredients(instance, ingredients_data)
+        RecipeSerializer._create_ingredients(instance, ingredients_data)
 
         return super().update(instance, validated_data)
 
-    def _create_ingredients(self, recipe, ingredients) -> None:
+    @staticmethod
+    def _create_ingredients(recipe, ingredients) -> None:
         IngredientRecipe.objects.bulk_create(
             [
                 IngredientRecipe(
