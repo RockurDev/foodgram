@@ -80,7 +80,7 @@ class RecipieAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request: Request) -> QuerySet:
         queryset = super().get_queryset(request)
-        return queryset.annotate(favorites_count=Count('favorited_by_users'))
+        return queryset.annotate(favorites_count=Count('favorites'))
 
 
 @admin.register(IngredientRecipe)
