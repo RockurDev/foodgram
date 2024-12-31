@@ -35,9 +35,7 @@ class UserAdmin(BaseUserAdmin):
 
     def avatar_preview(self, obj) -> Union[SafeText, Literal['']]:
         if obj.avatar:
-            return mark_safe(
-                f'<img src={obj.avatar.url} width="90" height="90" />'
-            )
+            return mark_safe(f'<img src={obj.avatar.url} width="90" />')
         return ''
 
     avatar_preview.short_description = 'Аватар'
