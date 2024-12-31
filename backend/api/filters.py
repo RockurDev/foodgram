@@ -29,4 +29,4 @@ class IngredientFilter(filters.FilterSet):
 
     class Meta:
         model = Ingredient
-        fields = {'name': ('startswith', 'icontains')}
+        fields = {'name': ('icontains',)}
