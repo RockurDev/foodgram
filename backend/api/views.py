@@ -16,7 +16,7 @@ from rest_framework.permissions import (
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from .filters import RecipeFilter
+from .filters import IngredientFilter, RecipeFilter
 from .mixins import ShoppingListGeneratorMixin
 from .pagination import DefaultPagination
 from .utils import get_short_recipe_url
@@ -149,7 +149,7 @@ class IngredientsViewset(viewsets.ReadOnlyModelViewSet):
     queryset = Ingredient.objects.all()
     serializer_class = IngredientListSerializer
     pagination_class = None
-    filterset_fields = ('name',)
+    filterset_class = IngredientFilter
 
 
 class RecipeViewset(ShoppingListGeneratorMixin, viewsets.ModelViewSet):
