@@ -110,7 +110,7 @@ class UserViewset(DjoserUserViewSet):
         user = self.request.user
         queryset = user.subscriptions.annotate(  # type: ignore
             recipes_count=Count('subscribed_to__authored_recipes')
-        ).order_by('id')
+        ).order_by('-recipes_count', 'subscribed_to__username')
         page = self.paginate_queryset(queryset)
         serializer = self.get_serializer(page, many=True)
         return self.get_paginated_response(serializer.data)
