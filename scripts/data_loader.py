@@ -62,10 +62,7 @@ def read_csv(file_path: Path):
     """
     with open(file_path, 'r') as file:
         reader = csv.reader(file)
-        data = []
-        for row in reader:
-            row[0] = row[0].capitalize()
-            data.append(tuple(row))
+        data = [tuple(row) for row in reader]
     if not data:
         raise ValueError('CSV file is empty or not formatted correctly.')
     return data
