@@ -21,19 +21,6 @@ class TagAdmin(admin.ModelAdmin):
     search_fields = ('name', 'slug')
 
 
-# @admin.register(TagRecipe)
-# class TagRecipeAdmin(admin.ModelAdmin):
-#     """Admin panel for the TagRecipe model."""
-
-#     list_display = ('id', 'recipe', 'tag', 'get_tag_slug')
-#     search_fields = ('recipe__name', 'tag__name')
-#     list_filter = ('tag',)
-
-#     @admin.display(description='Тег -> Слаг', ordering='tag__slug')
-#     def get_tag_slug(self, obj):
-#         return obj.tag.slug
-
-
 @admin.register(Ingredient)
 class IngredientAdmin(admin.ModelAdmin):
     """Admin panel for the Ingredient model."""
